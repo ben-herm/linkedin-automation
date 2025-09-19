@@ -1,0 +1,43 @@
+{
+  "name": "linkedin-messaging-automation",
+  "version": "1.0.0",
+  "description": "LinkedIn messaging automation with AI-powered responses",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node scripts/test-system.js",
+    "setup-db": "node scripts/setup-database.js",
+    "setup-webhooks": "node scripts/setup-webhooks.js",
+    "setup": "npm run setup-db && npm run setup-webhooks",
+    "test-linkedin": "node test-linkedin-connection.js",
+    "test-automation": "node scripts/test-complete-automation.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.3",
+    "axios": "^1.5.0",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "form-data": "^4.0.4",
+    "helmet": "^7.0.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^4.2.1",
+    "openai": "^5.21.0",
+    "pg": "^8.16.3",
+    "sqlite3": "^5.1.6",
+    "twilio": "^4.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "linkedin",
+    "automation",
+    "messaging",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT"
+}
