@@ -1,33 +1,34 @@
 # 🚀 LinkedIn Automation System
 
-**Complete end-to-end LinkedIn outreach automation with AI message generation, human approval workflow, and real-time dashboard monitoring.**
+**Complete LinkedIn outreach automation with AI message generation, human approval workflow, and real-time dashboard monitoring.**
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://postgresql.org/)
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-purple.svg)](https://openai.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## ✨ Features
+## ✨ What This System Actually Does
 
-- **🤖 AI-Powered Messages**: Personalized connection requests and follow-ups using OpenAI GPT-4o
-- **👥 Smart Lead Management**: Import leads from CSV, track campaign states, manage automation flow
-- **✅ Human Approval Workflow**: Review and approve all messages before sending
-- **📊 Real-time Dashboard**: Monitor automation pipeline, approve messages, track responses
-- **🔄 Automated State Machine**: Intelligent lead progression through campaign stages
-- **📱 Webhook Integration**: Real-time processing of LinkedIn events and responses
-- **🛡️ LinkedIn Compliant**: Respects rate limits and follows best practices
-- **📈 Analytics & Reporting**: Track performance, conversion rates, and campaign metrics
+This is a **LinkedIn automation system** that:
+
+1. **Imports leads** from CSV files into an existing PostgreSQL database
+2. **Automatically initializes** leads with `NEW_LEAD` status
+3. **Sends connection requests** daily (respecting LinkedIn limits)
+4. **Generates AI messages** when connections are accepted
+5. **Requires human approval** before sending any messages
+6. **Processes webhook events** in real-time from LinkedIn
+7. **Provides a dashboard** to monitor and manage the entire pipeline
 
 ## 🎯 Perfect For
 
 - **Sales Teams**: B2B outreach and lead generation
-- **Agencies**: Client lead generation services
+- **Agencies**: Client lead generation services  
 - **Entrepreneurs**: Scaling LinkedIn networking
 - **Business Owners**: Automated prospect outreach
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Complete Setup Guide
 
 ### Prerequisites
 
@@ -36,195 +37,265 @@
 - Unipile API account
 - OpenAI API key
 
-### Installation
+### Step 1: Clone & Install
 
-1. **Clone the repository**
 ```bash
 git clone https://github.com/your-username/linkedin-automation.git
 cd linkedin-automation
-```
-
-2. **Install dependencies**
-```bash
 npm install
 ```
 
-3. **Setup environment variables**
-```bash
-cp .env.example .env
-```
+### Step 2: Environment Configuration
 
-4. **Configure your `.env` file**
+Create `.env` file with these **REQUIRED** variables:
+
 ```env
-# Database
+# Database (REQUIRED)
 DATABASE_URL=postgresql://username:password@host:port/database
 
-# Unipile API (LinkedIn Integration)
+# Unipile API (REQUIRED for LinkedIn integration)
 UNIPILE_API_TOKEN=your_unipile_api_token
 UNIPILE_DSN=your_unipile_dsn
 UNIPILE_LINKEDIN_ACCOUNT_ID=your_linkedin_account_id
 
-# OpenAI API
+# OpenAI API (REQUIRED for AI message generation)
 OPENAI_API_KEY=your_openai_api_key
 
-# Daily Limits (adjust as needed)
-MAX_CONNECTION_REQUESTS_PER_DAY=10
-MAX_MESSAGES_PER_DAY=20
+# Daily Limits (OPTIONAL - defaults shown)
+MAX_CONNECTION_REQUESTS_PER_DAY=1
+MAX_MESSAGES_PER_DAY=1
 MAX_PROFILE_VIEWS_PER_DAY=75
 
-# Message Timing
+# Message Timing (OPTIONAL - defaults shown)
 MESSAGE_DELAY_MIN_MINUTES=30
 MESSAGE_DELAY_MAX_MINUTES=120
 FOLLOW_UP_DELAY_DAYS=3
+
+# WhatsApp Notifications (OPTIONAL)
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_WHATSAPP_NUMBER=+14155238886
+MAIN_WHATSAPP_NUMBER=+1234567890
+SECONDARY_WHATSAPP_NUMBER=+1234567891
+
+# Business Info (OPTIONAL)
+CALENDLY_LINK=https://calendly.com/your-link
+
+# Server (OPTIONAL)
+PORT=3000
+NODE_ENV=development
 ```
 
-5. **Initialize the database**
+### Step 3: Database Setup
+
 ```bash
-npm run setup
+npm run setup-db
 ```
 
-6. **Start the system**
+**What this does:**
+- Connects to your PostgreSQL database
+- Creates automation tables (`campaign_states`, `messages`, `responses`, `activity_log`, `daily_limits`)
+- **Does NOT create the `"Leads"` table** (uses your existing one)
+
+### Step 4: Webhook Setup (Optional)
+
+```bash
+npm run setup-webhooks
+```
+
+**What this does:**
+- Sets up webhooks with Unipile for real-time LinkedIn events
+- Requires ngrok for local development
+- **Can be skipped** - system works without webhooks (manual processing)
+
+### Step 5: Start the System
+
 ```bash
 npm start
 ```
 
-7. **Access the dashboard**
+**What happens:**
+- Server starts on http://localhost:3000
+- Database connects and initializes
+- Schedulers start (8 AM lead init, 9 AM automation)
+- Dashboard becomes available
+
+### Step 6: Access Dashboard
+
 Open http://localhost:3000 in your browser
 
 ---
 
-## 📊 System Architecture
+## 📊 The Complete System Flow
 
-### Automation Pipeline
+### 🔄 **Automation Pipeline**
 
 ```mermaid
 graph TD
-    A[Lead Import] --> B[NEW_LEAD]
-    B --> C[Daily Automation]
+    A[CSV Import] --> B[NEW_LEAD]
+    B --> C[Daily Scheduler 9 AM]
     C --> D[CONNECTION_REQUEST_SENT]
-    D --> E[Connection Accepted]
+    D --> E[Webhook: Connection Accepted]
     E --> F[CONNECTION_ACCEPTED]
-    F --> G[AI Message Generation]
+    F --> G[AI Generates Message]
     G --> H[FIRST_MESSAGE_DRAFTED]
-    H --> I[Human Approval]
-    I --> J[FIRST_MESSAGE_SENT]
-    J --> K[Response Received]
-    K --> L[AI Analysis]
-    L --> M{Response Type}
-    M -->|Interested| N[HOT_LEAD]
-    M -->|Neutral| O[Follow-up Generated]
-    M -->|Negative| P[CLOSED_LOST]
-    O --> Q[FOLLOW_UP_DRAFTED]
-    Q --> I
+    H --> I[Human Approval Required]
+    I --> J{Approved?}
+    J -->|Yes| K[FIRST_MESSAGE_SENT]
+    J -->|No| L[Workflow Paused]
+    K --> M[Webhook: Response Received]
+    M --> N[RESPONSE_RECEIVED]
+    N --> O[AI Analyzes Response]
+    O --> P{Response Type}
+    P -->|Interested| Q[HOT_LEAD]
+    P -->|Neutral| R[FOLLOW_UP_DRAFTED]
+    P -->|Negative| S[CLOSED_LOST]
+    R --> I
 ```
 
-### Database Schema
+### 🕐 **Daily Automation Schedule**
 
-- **`"Leads"`**: Main lead data and LinkedIn profiles (existing table)
-  - `LeadId` (Primary Key), `full_name`, `linkedin_profile_url`, `headline`, `current_company_name`, `positions` (JSONB), `status`, `summary`, `skills`
-- **`campaign_states`**: Tracks lead progression through automation
-  - `id` (Primary Key), `lead_id`, `current_state`, `previous_state`, `state_data` (JSONB), `created_at`, `updated_at`
-- **`messages`**: Generated and sent messages
-  - `id` (Primary Key), `lead_id`, `type`, `content`, `ai_generated`, `status`, `human_approved`, `sent_at`, `unipile_message_id`, `created_at`, `updated_at`
-- **`responses`**: Prospect replies and interactions
-  - `id` (Primary Key), `lead_id`, `content`, `sentiment`, `unipile_message_id`, `status`, `processed`, `received_at`, `created_at`
-- **`activity_log`**: Comprehensive audit trail
-  - `id` (Primary Key), `lead_id`, `action`, `details` (JSONB), `success`, `error_message`, `created_at`
-- **`daily_limits`**: Tracks daily usage limits
-  - `id` (Primary Key), `date`, `connection_requests_sent`, `messages_sent`, `profile_views`, `created_at`
+- **8:00 AM (Asia/Jerusalem)**: Lead Initialization
+  - Finds leads without campaign states
+  - Sets them to `NEW_LEAD` status
+  - Runs automatically via cron job
+
+- **9:00 AM (Asia/Jerusalem)**: Daily Automation
+  - Gets leads in `NEW_LEAD` status
+  - Sends connection requests (respects daily limits)
+  - Updates states to `CONNECTION_REQUEST_SENT`
+  - Runs automatically via cron job
+
+- **24/7**: Webhook Processing
+  - Handles LinkedIn events in real-time
+  - Processes connection acceptances
+  - Processes message responses
+  - Updates lead states automatically
 
 ---
 
-## 🎮 How to Use
+## 🎮 Complete Usage Guide
 
 ### 1. Import Leads
 
-Create a CSV file with the following columns:
+**CSV Format Required:**
 ```csv
 name,company,linkedin_url,title,industry
 John Smith,TechCorp Inc,https://linkedin.com/in/johnsmith,CEO,Technology
 Sarah Johnson,RestaurantCo,https://linkedin.com/in/sarahjohnson,Owner,Food & Restaurant
 ```
 
-**Upload via Dashboard:**
-1. Go to http://localhost:3000
-2. Click "Import Leads" button
-3. Select your CSV file
-4. System automatically imports and initializes leads
+**Import Methods:**
 
-**Or use API:**
+**Method A: API Only (Current)**
 ```bash
 curl -X POST http://localhost:3000/api/leads/import \
   -F "csvFile=@leads.csv"
 ```
 
-### 2. Start Automation
+**Method B: Direct Database (Alternative)**
+- Import directly into your `"Leads"` table
+- System will detect and initialize them automatically
 
-**Automatic Processing:**
-- System runs daily at 9 AM (Asia/Jerusalem timezone)
-- Initializes new leads with `NEW_LEAD` status
-- Sends connection requests (respects daily limits)
-- Processes webhook events in real-time
+**What Happens During Import:**
+1. Parses CSV file
+2. Validates required fields (`name`, `linkedin_url`)
+3. Checks for duplicates (by LinkedIn URL)
+4. Inserts into `"Leads"` table
+5. **Automatically sets `NEW_LEAD` status** via `updateCampaignState()`
+6. Returns import results
 
-**Manual Trigger:**
-```bash
-# Run daily automation now
-curl -X POST http://localhost:3000/api/leads/run-daily-automation
+### 2. Monitor Automation
 
-# Initialize leads manually
-curl -X POST http://localhost:3000/dashboard/initialize-leads
-```
+**The system automatically:**
+- **8 AM**: Initializes new leads with `NEW_LEAD` status
+- **9 AM**: Sends connection requests (respects daily limits)
+- **24/7**: Processes webhook events in real-time
+- **On Connection Accept**: Generates AI messages for approval
+- **On Response**: Analyzes sentiment and updates states
 
 ### 3. Approve Messages
 
 **Dashboard Workflow:**
 1. Go to http://localhost:3000
-2. Click on "Messages Drafted" card
+2. Look for "Messages Drafted" section (if any pending)
 3. Review AI-generated messages
 4. **Approve**: Message gets sent automatically
 5. **Reject**: Lead workflow pauses
 6. **Edit**: Modify content before approving
+7. **Bulk Actions**: Approve/reject all messages at once
 
-**Bulk Operations:**
-- Select multiple messages for bulk approval
-- Filter by message type (connection_request, follow_up)
-- View message history and context
+### 4. Handle Responses
 
-### 4. Monitor & Respond
-
-**Dashboard Cards:**
-- **Pipeline Overview**: See leads in each automation stage
-- **Unread Replies**: Respond to prospect messages
-- **Hot Leads**: Follow up on interested prospects
-- **Today's Progress**: Track daily activity
-
-**Real-time Updates:**
-- Webhook processes LinkedIn events instantly
-- Dashboard updates automatically
-- Activity log tracks all actions
+**When prospects reply:**
+1. Webhook processes the response instantly
+2. AI analyzes the response sentiment
+3. Dashboard shows "Unread Replies" card
+4. You can view and respond to replies
+5. System marks responses as `HOT_LEAD` if interested
 
 ---
 
-## 🔧 API Endpoints
+## 📱 Complete Dashboard Features
 
-### Dashboard
+### **Pipeline Overview Cards**
+- **🆕 New Leads**: Leads ready for processing
+- **🤝 Requests Sent**: Connection requests awaiting acceptance
+- **✅ Connected**: Accepted connections ready for messaging
+- **✍️ Drafted**: Messages awaiting approval
+- **💬 Replies**: Unread prospect responses
+- **🔥 Hot Leads**: Interested prospects needing attention
+- **❌ Closed Lost**: Not interested prospects
+- **📈 Today's Progress**: Connection requests sent today
+- **📊 Total Active**: Leads in automation pipeline
+- **⚠️ Not Started**: Leads needing initialization
+
+### **Interactive Features**
+- **Click any card** to view detailed list of leads
+- **Modal popups** show lead details and LinkedIn profiles
+- **Copy LinkedIn URLs** to clipboard
+- **View lead states** and timestamps
+- **Auto-refresh** every 30 seconds
+
+### **Message Management**
+- **Pending Approvals**: Review AI-generated messages
+- **Approve/Reject**: Individual message actions
+- **Edit Messages**: Modify content before sending
+- **Bulk Actions**: Approve/reject all messages
+- **Message History**: View all sent messages
+
+### **Real-time Updates**
+- **Live Statistics**: Updated automatically
+- **Webhook Processing**: Real-time event handling
+- **State Changes**: Immediate status updates
+- **Activity Logging**: Comprehensive audit trail
+
+---
+
+## 🔧 Complete API Reference
+
+### **Dashboard Endpoints**
 - `GET /dashboard/stats` - System statistics and metrics
 - `GET /dashboard/leads-by-state/:state` - Leads by automation state
 - `GET /dashboard/unread-replies` - Unread prospect responses
 - `GET /dashboard/sent-requests-today` - Connection requests sent today
+- `GET /dashboard/debug-info` - Debug information
+- `GET /dashboard/analytics` - Detailed analytics
+- `GET /dashboard/activity` - Activity feed
 - `POST /dashboard/initialize-leads` - Manually initialize leads
 - `POST /dashboard/reset-daily-limits` - Reset today's limits
 
-### Leads
+### **Leads Endpoints**
 - `GET /api/leads` - List all leads
 - `GET /api/leads/:id` - Get specific lead
 - `POST /api/leads` - Create new lead
 - `PUT /api/leads/:id` - Update lead
 - `DELETE /api/leads/:id` - Delete lead
 - `POST /api/leads/import` - Import leads from CSV
+- `POST /api/leads/start-batch` - Start batch processing
 - `POST /api/leads/run-daily-automation` - Trigger daily automation
 
-### Messages
+### **Messages Endpoints**
 - `GET /api/messages` - List messages with pagination
 - `GET /api/messages/pending-approval` - Messages awaiting approval
 - `GET /api/messages/:id` - Get specific message
@@ -235,80 +306,215 @@ curl -X POST http://localhost:3000/dashboard/initialize-leads
 - `PUT /api/messages/:id` - Update message content
 - `DELETE /api/messages/:id` - Delete message
 
-### Webhooks
-- `POST /webhooks/unipile` - Unipile webhook endpoint (handles all events)
+### **Webhook Endpoints**
+- `POST /webhooks/unipile` - Main webhook endpoint (handles all events)
+- `POST /webhooks/test` - Test webhook endpoint
+- `GET /webhooks/status` - Webhook health check
+
+### **System Endpoints**
+- `GET /health` - System health check
+- `GET /api/test/unipile` - Test Unipile connection
 
 ---
 
 ## 🛡️ Safety Features
 
-### Rate Limiting
-- Configurable daily limits for connections, messages, and profile views
-- Random delays between actions (30-120 minutes)
-- Automatic limit tracking and enforcement
+### **Rate Limiting**
+- **Default**: 1 connection request/day, 1 message/day (very conservative)
+- **Configurable**: Adjust in `.env` file
+- **Automatic**: System respects LinkedIn's limits
+- **Daily Tracking**: Monitors usage in `daily_limits` table
 
-### Human Oversight
-- All messages require human approval before sending
-- Dashboard interface for easy message review
-- Bulk approval capabilities for efficiency
+### **Human Oversight**
+- **All messages require approval** before sending
+- **Dashboard interface** for easy message review
+- **Bulk approval** capabilities for efficiency
+- **Edit functionality** for message customization
 
-### Error Handling
-- Comprehensive error logging and recovery
-- Automatic retry mechanisms for failed operations
-- Account health monitoring and protection
+### **Error Handling**
+- **Comprehensive logging** of all actions
+- **Automatic retry** mechanisms for failed operations
+- **Account health monitoring** and protection
+- **Activity log** tracks all system events
 
-### LinkedIn Compliance
-- Respects LinkedIn's rate limits and best practices
-- Gradual ramp-up of activity levels
-- Smart error handling for account restrictions
-
----
-
-## 📈 Expected Results
-
-### Conservative Approach (Week 1)
-- **Leads Processed**: 100
-- **Connection Requests**: 10/day
-- **Acceptance Rate**: ~20% = 14 connections
-- **Response Rate**: ~10% = 1-2 conversations
-
-### Full Scale (Month 1)
-- **Leads Processed**: 500+
-- **Connection Requests**: 10/day = 300+ requests
-- **Accepted Connections**: ~60
-- **Qualified Conversations**: ~6-10
-- **Hot Leads**: 2-3 per week
+### **Webhook Security**
+- **Authentication bypassed** for development (can be enabled)
+- **Event validation** and processing
+- **Duplicate prevention** based on message IDs
+- **Error recovery** and logging
 
 ---
 
-## 🔧 Configuration
+## 📊 Complete Database Schema
 
-### Daily Limits
-Adjust in your `.env` file:
+### **`"Leads"`** (existing table - not created by system)
+- `LeadId` (Primary Key)
+- `full_name`
+- `linkedin_profile_url`
+- `headline`
+- `current_company_name`
+- `positions` (JSONB - array of position objects)
+- `status` (e.g., 'initial data')
+- `summary`
+- `skills`
+
+### **`campaign_states`** (automation tracking)
+- `id` (Primary Key)
+- `lead_id` (references "Leads"."LeadId")
+- `current_state` (NEW_LEAD, CONNECTION_REQUEST_SENT, etc.)
+- `previous_state`
+- `state_data` (JSONB - additional state information)
+- `created_at`
+- `updated_at`
+
+### **`messages`** (generated messages)
+- `id` (Primary Key)
+- `lead_id` (references "Leads"."LeadId")
+- `type` (connection_request, follow_up, etc.)
+- `content` (message text)
+- `ai_generated` (boolean)
+- `status` (draft, approved, sent, rejected)
+- `human_approved` (boolean)
+- `sent_at` (timestamp when sent)
+- `unipile_message_id` (Unipile's message ID)
+- `created_at`
+- `updated_at`
+
+### **`responses`** (prospect replies)
+- `id` (Primary Key)
+- `lead_id` (references "Leads"."LeadId")
+- `content` (response text)
+- `sentiment` (INTERESTED, NEUTRAL, NEGATIVE)
+- `unipile_message_id` (Unipile's message ID)
+- `status` (UNREAD, REPLIED, IGNORED)
+- `processed` (boolean)
+- `received_at` (timestamp when received)
+- `created_at`
+
+### **`activity_log`** (audit trail)
+- `id` (Primary Key)
+- `lead_id` (references "Leads"."LeadId")
+- `action` (action performed)
+- `details` (JSONB - additional details)
+- `success` (boolean)
+- `error_message` (if failed)
+- `created_at`
+
+### **`daily_limits`** (usage tracking)
+- `id` (Primary Key)
+- `date` (date)
+- `connection_requests_sent` (count)
+- `messages_sent` (count)
+- `profile_views` (count)
+- `created_at`
+
+---
+
+## 🔄 Complete State Machine
+
+### **State Progression**
+1. `NEW_LEAD` → `CONNECTION_REQUEST_SENT` → `CONNECTION_ACCEPTED`
+2. `CONNECTION_ACCEPTED` → `FIRST_MESSAGE_DRAFTED` → `FIRST_MESSAGE_SENT`
+3. `FIRST_MESSAGE_SENT` → `RESPONSE_RECEIVED` → `FOLLOW_UP_DRAFTED`
+4. `FOLLOW_UP_DRAFTED` → `FOLLOW_UP_SENT` → `HOT_LEAD`/`CLOSED_LOST`
+
+### **State Descriptions**
+- **`NEW_LEAD`**: Lead imported and ready for connection request
+- **`CONNECTION_REQUEST_SENT`**: Connection request sent, awaiting acceptance
+- **`CONNECTION_ACCEPTED`**: Connection accepted, ready for first message
+- **`FIRST_MESSAGE_DRAFTED`**: AI generated first message, awaiting approval
+- **`FIRST_MESSAGE_SENT`**: First message sent, awaiting response
+- **`RESPONSE_RECEIVED`**: Prospect replied, response being analyzed
+- **`FOLLOW_UP_DRAFTED`**: AI generated follow-up, awaiting approval
+- **`FOLLOW_UP_SENT`**: Follow-up sent, awaiting response
+- **`HOT_LEAD`**: Prospect shows interest, needs immediate attention
+- **`CLOSED_LOST`**: Prospect not interested, campaign ended
+
+---
+
+## 📱 Complete Webhook Events
+
+### **Supported Events**
+- **`message_received`**: Prospect replies to your messages
+- **`new_relation`**: Connection requests accepted  
+- **`message_sent`**: Confirmation of sent messages
+- **`message_reaction`**: Message reactions (likes, etc.)
+- **`message_read`**: Message read receipts
+- **`message_edited`**: Message edits
+- **`message_deleted`**: Message deletions
+
+### **Webhook Processing**
+- **Real-time processing** of LinkedIn events
+- **Sender detection** to ignore messages sent by your account
+- **Lead matching** by LinkedIn profile URL
+- **Duplicate prevention** based on Unipile message IDs
+- **State updates** based on event type
+- **Error handling** and logging
+
+---
+
+## ⚙️ Complete Configuration
+
+### **Environment Variables**
 ```env
-MAX_CONNECTION_REQUESTS_PER_DAY=10  # Start conservative
-MAX_MESSAGES_PER_DAY=20             # Increase gradually
-MAX_PROFILE_VIEWS_PER_DAY=75        # Usually automatic
+# Database (REQUIRED)
+DATABASE_URL=postgresql://username:password@host:port/database
+
+# Unipile API (REQUIRED)
+UNIPILE_API_TOKEN=your_unipile_api_token
+UNIPILE_DSN=your_unipile_dsn
+UNIPILE_LINKEDIN_ACCOUNT_ID=your_linkedin_account_id
+
+# OpenAI API (REQUIRED)
+OPENAI_API_KEY=your_openai_api_key
+
+# Daily Limits (OPTIONAL)
+MAX_CONNECTION_REQUESTS_PER_DAY=1
+MAX_MESSAGES_PER_DAY=1
+MAX_PROFILE_VIEWS_PER_DAY=75
+
+# Message Timing (OPTIONAL)
+MESSAGE_DELAY_MIN_MINUTES=30
+MESSAGE_DELAY_MAX_MINUTES=120
+FOLLOW_UP_DELAY_DAYS=3
+
+# WhatsApp (OPTIONAL)
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_WHATSAPP_NUMBER=+14155238886
+MAIN_WHATSAPP_NUMBER=+1234567890
+SECONDARY_WHATSAPP_NUMBER=+1234567891
+
+# Business Info (OPTIONAL)
+CALENDLY_LINK=https://calendly.com/your-link
+
+# Server (OPTIONAL)
+PORT=3000
+NODE_ENV=development
 ```
 
-### Message Timing
-```env
-MESSAGE_DELAY_MIN_MINUTES=30        # Minimum delay
-MESSAGE_DELAY_MAX_MINUTES=120       # Maximum delay
-FOLLOW_UP_DELAY_DAYS=3              # Days between follow-ups
-```
-
-### Automation Schedule
+### **Automation Schedule**
 - **Lead Initialization**: Daily at 8 AM (Asia/Jerusalem timezone)
 - **Daily Automation**: Daily at 9 AM (Asia/Jerusalem timezone)
 - **Webhook Processing**: Real-time (24/7)
-- **Timezone**: Asia/Jerusalem (hardcoded in scheduler)
+
+### **Available Scripts**
+```bash
+npm start              # Start the server
+npm run dev            # Start with nodemon (development)
+npm test               # Run system tests
+npm run setup-db       # Setup database tables
+npm run setup-webhooks # Setup webhooks with Unipile
+npm run setup          # Run both setup-db and setup-webhooks
+npm run test-linkedin  # Test LinkedIn connection
+npm run test-automation # Test complete automation flow
+```
 
 ---
 
-## 🆘 Troubleshooting
+## 🆘 Complete Troubleshooting
 
-### Common Issues
+### **Common Issues**
 
 **"Database connection failed"**
 ```bash
@@ -340,41 +546,60 @@ npm run setup-db
 - Check webhook authentication (currently bypassed for development)
 - Ensure server is accessible from internet (use ngrok for local testing)
 
-### Debug Mode
-Enable detailed logging:
+**"CSV import not working"**
+- Use API endpoint: `POST /api/leads/import`
+- Ensure CSV has required columns: `name`, `linkedin_url`
+- Check file format and encoding
+
+### **Debug Commands**
 ```bash
+# Enable detailed logging
 DEBUG=* npm start
+
+# Test system components
+npm test
+
+# Check webhook status
+curl http://localhost:3000/webhooks/status
+
+# Check system health
+curl http://localhost:3000/health
+
+# Test Unipile connection
+curl http://localhost:3000/api/test/unipile
 ```
 
-### Test System
-Run comprehensive system tests:
+### **Manual Operations**
 ```bash
-npm test
+# Initialize leads manually
+curl -X POST http://localhost:3000/dashboard/initialize-leads
+
+# Run daily automation manually
+curl -X POST http://localhost:3000/api/leads/run-daily-automation
+
+# Reset daily limits
+curl -X POST http://localhost:3000/dashboard/reset-daily-limits
+
+# Import leads via API
+curl -X POST http://localhost:3000/api/leads/import -F "csvFile=@leads.csv"
 ```
 
 ---
 
-## 📚 API Documentation
+## 📈 Expected Results
 
-### Webhook Events
+### **Conservative Approach (Week 1)**
+- **Leads Processed**: 100
+- **Connection Requests**: 1/day
+- **Acceptance Rate**: ~20% = 7 connections
+- **Response Rate**: ~10% = 1 conversation
 
-The system processes these Unipile webhook events:
-
-- **`message_received`**: Prospect replies to your messages
-- **`new_relation`**: Connection requests accepted  
-- **`message_sent`**: Confirmation of sent messages
-- **`message_reaction`**: Message reactions (likes, etc.)
-- **`message_read`**: Message read receipts
-- **`message_edited`**: Message edits
-- **`message_deleted`**: Message deletions
-
-### State Machine
-
-Leads progress through these states:
-- `NEW_LEAD` → `CONNECTION_REQUEST_SENT` → `CONNECTION_ACCEPTED`
-- `CONNECTION_ACCEPTED` → `FIRST_MESSAGE_DRAFTED` → `FIRST_MESSAGE_SENT`
-- `FIRST_MESSAGE_SENT` → `RESPONSE_RECEIVED` → `FOLLOW_UP_DRAFTED`
-- `FOLLOW_UP_DRAFTED` → `FOLLOW_UP_SENT` → `HOT_LEAD`/`CLOSED_LOST`
+### **Full Scale (Month 1)**
+- **Leads Processed**: 500+
+- **Connection Requests**: 1/day = 30+ requests
+- **Accepted Connections**: ~6
+- **Qualified Conversations**: ~1-2
+- **Hot Leads**: 1-2 per month
 
 ---
 
