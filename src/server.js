@@ -188,7 +188,7 @@ class LinkedInAutomationServer {
 
     // Main dashboard route
     this.app.get('/', (req, res) => {
-      res.sendFile(path.join(__dirname, 'public', 'index-simplified.html'));
+      res.sendFile(path.join(__dirname, 'public', 'index.html'));
     });
 
     // Health check
