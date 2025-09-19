@@ -62,12 +62,14 @@ class RealPostgresDatabaseManager {
       // Add missing columns to existing responses table
       `ALTER TABLE responses ADD COLUMN IF NOT EXISTS processed BOOLEAN DEFAULT FALSE`,
       `ALTER TABLE responses ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'PENDING'`,
+      
+      // Remove circular dependency - drop message_id column if it exists
+      `ALTER TABLE responses DROP COLUMN IF EXISTS message_id`,
 
       // Responses table - stores prospect replies
       `CREATE TABLE IF NOT EXISTS responses (
         id SERIAL PRIMARY KEY,
         lead_id BIGINT REFERENCES "Leads"("LeadId") ON DELETE CASCADE,
-        message_id INTEGER REFERENCES messages(id) ON DELETE CASCADE,
         content TEXT NOT NULL,
         sentiment VARCHAR(50),
         unipile_message_id VARCHAR(255),

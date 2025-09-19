@@ -85,9 +85,7 @@ router.post('/unipile', async (req, res) => {
     console.log(`📋 Full Payload:`, JSON.stringify(webhookPayload, null, 2));
     console.log('=====================================\n');
     
-    // TEMPORARY: Return early to prevent processing - just log the webhook
-    console.log('🚫 WEBHOOK PROCESSING DISABLED - RETURNING EARLY FOR TESTING');
-    return res.status(200).json({ received: true, message: 'Webhook received but processing disabled' });
+    // Webhook processing enabled - continue with normal flow
 
     // Log the webhook event
     await req.db.executeQuery(
