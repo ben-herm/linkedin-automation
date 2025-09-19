@@ -1,317 +1,343 @@
-# 🚀 LinkedIn Messaging Automation System
+# 🚀 LinkedIn Automation System
 
-**Complete end-to-end LinkedIn outreach automation with AI message generation, human approval, and WhatsApp notifications.**
+**Complete end-to-end LinkedIn outreach automation with AI message generation, human approval workflow, and real-time dashboard monitoring.**
 
-## ✨ What This System Does
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://postgresql.org/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-purple.svg)](https://openai.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- **🤖 AI-Generated Messages**: Personalized connection requests and follow-ups using Claude 3.5 Sonnet
-- **👥 Smart Lead Management**: Import leads from CSV, track states, manage campaigns
-- **✅ Human Approval Workflow**: Review and approve messages before sending
-- **📱 WhatsApp Notifications**: Get instant alerts for responses, hot leads, and approvals needed
-- **🔄 Automated Follow-ups**: Smart sequence management with timing optimization
-- **📊 Analytics Dashboard**: Track performance, conversion rates, and campaign metrics
-- **🛡️ LinkedIn Compliant**: Respects rate limits and best practices
+## ✨ Features
+
+- **🤖 AI-Powered Messages**: Personalized connection requests and follow-ups using OpenAI GPT-4o
+- **👥 Smart Lead Management**: Import leads from CSV, track campaign states, manage automation flow
+- **✅ Human Approval Workflow**: Review and approve all messages before sending
+- **📊 Real-time Dashboard**: Monitor automation pipeline, approve messages, track responses
+- **🔄 Automated State Machine**: Intelligent lead progression through campaign stages
+- **📱 Webhook Integration**: Real-time processing of LinkedIn events and responses
+- **🛡️ LinkedIn Compliant**: Respects rate limits and follows best practices
+- **📈 Analytics & Reporting**: Track performance, conversion rates, and campaign metrics
 
 ## 🎯 Perfect For
 
-- Small business owners targeting other SMBs
-- Sales teams doing B2B outreach
-- Lead generation agencies
-- Anyone wanting to scale LinkedIn outreach safely
+- **Sales Teams**: B2B outreach and lead generation
+- **Agencies**: Client lead generation services
+- **Entrepreneurs**: Scaling LinkedIn networking
+- **Business Owners**: Automated prospect outreach
 
 ---
 
-## 🚀 Quick Start Guide (5 Minutes)
+## 🚀 Quick Start
 
-### Step 1: Clone & Install
+### Prerequisites
+
+- Node.js 18+ 
+- PostgreSQL database (Supabase recommended)
+- Unipile API account
+- OpenAI API key
+
+### Installation
+
+1. **Clone the repository**
 ```bash
-git clone <your-repo>
-cd linkedin-messaging
+git clone https://github.com/your-username/linkedin-automation.git
+cd linkedin-automation
+```
+
+2. **Install dependencies**
+```bash
 npm install
 ```
 
-### Step 2: Setup Environment
+3. **Setup environment variables**
 ```bash
-cp env.example .env
+cp .env.example .env
 ```
 
-**Edit `.env` with your API keys:**
-
+4. **Configure your `.env` file**
 ```env
-# 🔑 REQUIRED API KEYS
-UNIPILE_API_TOKEN=KR0oZlz5.tbMx17r//DHMivPC+0MoHrq+rXwxGMRBCrF9QjI7nB4=
-# Using Cursor's built-in Claude API - no separate key needed!
-USE_CURSOR_API=true
+# Database
+DATABASE_URL=postgresql://username:password@host:port/database
 
-# 📱 WhatsApp Notifications (Get from Twilio)
-TWILIO_ACCOUNT_SID=your_twilio_account_sid
-TWILIO_AUTH_TOKEN=your_twilio_auth_token
-TWILIO_WHATSAPP_NUMBER=+14155238886
+# Unipile API (LinkedIn Integration)
+UNIPILE_API_TOKEN=your_unipile_api_token
+UNIPILE_DSN=your_unipile_dsn
+UNIPILE_LINKEDIN_ACCOUNT_ID=your_linkedin_account_id
 
-# 📞 Your WhatsApp Numbers
-MAIN_WHATSAPP_NUMBER=+972508676743
-SECONDARY_WHATSAPP_NUMBER=+972543139373
+# OpenAI API
+OPENAI_API_KEY=your_openai_api_key
 
-# 🏢 Business Info
-COMPANY_NAME=Your Company Name
-CALENDLY_LINK=https://calendly.com/your-link
-BUSINESS_PITCH=We help established small business owners eliminate 15+ hours of weekly administrative work through simple AI automations
+# Daily Limits (adjust as needed)
+MAX_CONNECTION_REQUESTS_PER_DAY=10
+MAX_MESSAGES_PER_DAY=20
+MAX_PROFILE_VIEWS_PER_DAY=75
+
+# Message Timing
+MESSAGE_DELAY_MIN_MINUTES=30
+MESSAGE_DELAY_MAX_MINUTES=120
+FOLLOW_UP_DELAY_DAYS=3
 ```
 
-### Step 3: Initialize Database
-```bash
-npm run setup
-```
-
-### Step 4: Test Everything
-```bash
-npm run test-system
-```
-
-### Step 5: Start the System
+5. **Start the system**
 ```bash
 npm start
 ```
 
-**🎉 Done! Visit http://localhost:3000**
+6. **Access the dashboard**
+Open http://localhost:3000 in your browser
 
 ---
 
-## 🔑 Where to Get Your API Keys
+## 📊 System Architecture
 
-### 1. **Unipile API** (LinkedIn Integration)
-- Go to [unipile.com](https://unipile.com)
-- Sign up for free account
-- Connect your LinkedIn account
-- Copy API token from dashboard
-- **You already have this**: `KR0oZlz5.tbMx17r//DHMivPC+0MoHrq+rXwxGMRBCrF9QjI7nB4=`
+### Automation Pipeline
 
-### 2. **Claude API** (AI Message Generation)
-- **✅ USING CURSOR'S CLAUDE API** - No separate key needed!
-- **Cost**: $0 (included in your Cursor Pro subscription)
-- Fallback option: Direct Anthropic API if you want to scale beyond Cursor limits
+```mermaid
+graph TD
+    A[Lead Import] --> B[NEW_LEAD]
+    B --> C[Daily Automation]
+    C --> D[CONNECTION_REQUEST_SENT]
+    D --> E[Connection Accepted]
+    E --> F[CONNECTION_ACCEPTED]
+    F --> G[AI Message Generation]
+    G --> H[FIRST_MESSAGE_DRAFTED]
+    H --> I[Human Approval]
+    I --> J[FIRST_MESSAGE_SENT]
+    J --> K[Response Received]
+    K --> L[AI Analysis]
+    L --> M{Response Type}
+    M -->|Interested| N[HOT_LEAD]
+    M -->|Neutral| O[Follow-up Generated]
+    M -->|Negative| P[CLOSED_LOST]
+    O --> Q[FOLLOW_UP_DRAFTED]
+    Q --> I
+```
 
-### 3. **Twilio WhatsApp** (Notifications)
-- Go to [twilio.com](https://twilio.com)
-- Sign up and verify phone number
-- Get Account SID and Auth Token
-- **Cost**: ~$0.005 per message
+### Database Schema
 
----
-
-## 📊 How to Use
-
-### Import Leads
-1. Prepare CSV with columns: `name,company,linkedin_url,title,industry`
-2. Go to dashboard: http://localhost:3000
-3. Upload CSV file
-4. System imports and analyzes leads
-
-### Start Automation
-1. Click "Start Automation" for leads
-2. AI generates personalized messages
-3. Review and approve in dashboard
-4. System sends automatically
-5. Get WhatsApp alerts for responses
-
-### Monitor Results
-- **Dashboard**: Real-time stats and hot leads
-- **WhatsApp**: Instant notifications
-- **Analytics**: Track conversion rates
+- **Leads**: Main lead data and LinkedIn profiles
+- **campaign_states**: Tracks lead progression through automation
+- **messages**: Generated and sent messages
+- **responses**: Prospect replies and interactions
+- **activity_log**: Comprehensive audit trail
+- **daily_limits**: Tracks daily usage limits
 
 ---
 
-## 🎯 Sample Lead CSV
+## 🎮 How to Use
 
+### 1. Import Leads
+
+Create a CSV file with the following columns:
 ```csv
 name,company,linkedin_url,title,industry
 John Smith,TechCorp Inc,https://linkedin.com/in/johnsmith,CEO,Technology
 Sarah Johnson,RestaurantCo,https://linkedin.com/in/sarahjohnson,Owner,Food & Restaurant
-Mike Davis,RetailPlus,https://linkedin.com/in/mikedavis,Founder,Retail
 ```
+
+Upload via the dashboard or use the API endpoint:
+```bash
+curl -X POST http://localhost:3000/api/leads/import \
+  -F "csvFile=@leads.csv"
+```
+
+### 2. Monitor Automation
+
+The system automatically:
+- Initializes leads with `NEW_LEAD` status
+- Sends connection requests daily (9 AM schedule)
+- Processes connection acceptances via webhooks
+- Generates AI messages for approval
+- Handles responses and updates states
+
+### 3. Approve Messages
+
+1. Go to the dashboard
+2. Click on "Messages Drafted" card
+3. Review AI-generated messages
+4. Approve, reject, or edit messages
+5. System automatically sends approved messages
+
+### 4. Track Results
+
+Monitor your pipeline through the dashboard:
+- **Pipeline Overview**: See leads in each automation stage
+- **Unread Replies**: Respond to prospect messages
+- **Hot Leads**: Follow up on interested prospects
+- **Analytics**: Track conversion rates and performance
 
 ---
 
-## 📱 WhatsApp Notifications You'll Get
+## 🔧 API Endpoints
 
-### 🔔 New Messages to Approve
-```
-🔔 NEW MESSAGE NEEDS APPROVAL
+### Dashboard
+- `GET /dashboard/stats` - System statistics
+- `GET /dashboard/leads-by-state/:state` - Leads by automation state
+- `GET /dashboard/unread-replies` - Unread prospect responses
 
-👤 Sarah Johnson
-🏢 RestaurantCo
-💼 Owner
-🏭 Food & Restaurant
+### Leads
+- `GET /api/leads` - List all leads
+- `POST /api/leads` - Create new lead
+- `POST /api/leads/import` - Import leads from CSV
 
-View & approve: http://localhost:3000/approve/123
+### Messages
+- `GET /api/messages/pending-approval` - Messages awaiting approval
+- `POST /api/messages/:id/approve` - Approve/reject message
+- `POST /api/messages/bulk-approve` - Bulk approve messages
 
-Reply:
-✅ 1 = Approve
-❌ 2 = Reject  
-✏️ 3 = Edit
-```
-
-### 🔥 Hot Lead Alerts
-```
-🔥🔥 HOT LEAD ALERT! 🔥🔥
-
-👤 John Smith
-🏢 TechCorp Inc
-💼 CEO
-
-💬 "This sounds exactly what we need! Can we schedule a call this week?"
-
-🚨 TAKE ACTION NOW!
-📞 Call them: +1234567890
-🔗 LinkedIn: https://linkedin.com/in/johnsmith
-```
-
-### 📅 Calendar Requests
-```
-📅 CALENDAR REQUEST!
-
-👤 Sarah Johnson (RestaurantCo)
-💬 "Let's schedule a 15-minute call to discuss this further"
-
-They want to schedule a meeting! 
-🎯 Send them your Calendly link ASAP
-```
+### Webhooks
+- `POST /webhooks/unipile` - Unipile webhook endpoint
+- `GET /webhooks/status` - Webhook health check
 
 ---
 
 ## 🛡️ Safety Features
 
-- **Rate Limiting**: Max 25 connections/day, 50 messages/day
-- **Human Approval**: Review every message before sending
-- **Account Protection**: Monitors LinkedIn health
-- **Gradual Ramp**: Starts slow, increases over time
-- **Error Handling**: Automatic retries and fallbacks
+### Rate Limiting
+- Configurable daily limits for connections, messages, and profile views
+- Random delays between actions (30-120 minutes)
+- Automatic limit tracking and enforcement
+
+### Human Oversight
+- All messages require human approval before sending
+- Dashboard interface for easy message review
+- Bulk approval capabilities for efficiency
+
+### Error Handling
+- Comprehensive error logging and recovery
+- Automatic retry mechanisms for failed operations
+- Account health monitoring and protection
+
+### LinkedIn Compliance
+- Respects LinkedIn's rate limits and best practices
+- Gradual ramp-up of activity levels
+- Smart error handling for account restrictions
 
 ---
 
 ## 📈 Expected Results
 
-### Week 1 (Conservative Start)
-- Import 100 leads
-- Send 15 connection requests/day
-- ~20% acceptance rate = 21 connections
-- ~10% response rate = 2-3 conversations
+### Conservative Approach (Week 1)
+- **Leads Processed**: 100
+- **Connection Requests**: 10/day
+- **Acceptance Rate**: ~20% = 14 connections
+- **Response Rate**: ~10% = 1-2 conversations
 
-### Month 1 (Full Speed)
-- Process 500+ leads
-- 25 connections/day = 500+ requests
-- ~100 accepted connections
-- ~15-20 qualified conversations
-- 3-5 hot leads per week
-
-### ROI Example
-- **Input**: 500 leads processed
-- **Output**: 15 qualified conversations
-- **Close Rate**: 20% = 3 new clients
-- **Value**: 3 clients × $5,000 = $15,000
-- **Cost**: ~$50 in API fees
-- **ROI**: 300x return
+### Full Scale (Month 1)
+- **Leads Processed**: 500+
+- **Connection Requests**: 10/day = 300+ requests
+- **Accepted Connections**: ~60
+- **Qualified Conversations**: ~6-10
+- **Hot Leads**: 2-3 per week
 
 ---
 
-## 🔧 Advanced Configuration
+## 🔧 Configuration
 
-### Daily Limits (Adjust in .env)
+### Daily Limits
+Adjust in your `.env` file:
 ```env
-MAX_CONNECTION_REQUESTS_PER_DAY=25  # Start with 15-20
-MAX_MESSAGES_PER_DAY=50             # Start with 30-40
-MAX_PROFILE_VIEWS_PER_DAY=75        # Automatic
+MAX_CONNECTION_REQUESTS_PER_DAY=10  # Start conservative
+MAX_MESSAGES_PER_DAY=20             # Increase gradually
+MAX_PROFILE_VIEWS_PER_DAY=75        # Usually automatic
 ```
 
 ### Message Timing
 ```env
-MESSAGE_DELAY_MIN_MINUTES=30        # Minimum delay between messages
-MESSAGE_DELAY_MAX_MINUTES=120       # Maximum delay between messages
+MESSAGE_DELAY_MIN_MINUTES=30        # Minimum delay
+MESSAGE_DELAY_MAX_MINUTES=120       # Maximum delay
 FOLLOW_UP_DELAY_DAYS=3              # Days between follow-ups
 ```
+
+### Automation Schedule
+- **Lead Initialization**: Daily at 8 AM
+- **Daily Automation**: Daily at 9 AM
+- **Timezone**: Asia/Jerusalem (configurable)
 
 ---
 
 ## 🆘 Troubleshooting
 
-### "Database connection failed"
+### Common Issues
+
+**"Database connection failed"**
 ```bash
-npm run setup
+# Check your DATABASE_URL in .env
+# Ensure PostgreSQL is running
+# Verify connection credentials
 ```
 
-### "Unipile API failed"
-- Check your Unipile API token
-- Ensure LinkedIn account is connected
-- Verify account has credits
+**"Unipile API failed"**
+- Verify UNIPILE_API_TOKEN is correct
+- Check UNIPILE_DSN configuration
+- Ensure LinkedIn account is connected in Unipile dashboard
 
-### "AI service failed"
-- Check Claude API key
+**"OpenAI API failed"**
+- Verify OPENAI_API_KEY is valid
+- Check API key has sufficient credits
 - Ensure billing is set up
-- Try test message generation
 
-### "WhatsApp failed"
-- Verify Twilio credentials
-- Check WhatsApp sandbox setup
-- Confirm phone numbers format (+country code)
-
-### "No messages being sent"
+**"No messages being sent"**
 - Check daily limits in dashboard
 - Verify messages are approved
-- Check system status
+- Check system status and logs
+
+### Debug Mode
+Enable detailed logging:
+```bash
+DEBUG=* npm start
+```
 
 ---
 
-## 📞 Support
+## 📚 API Documentation
 
-### Quick Fixes
-1. **Restart system**: `npm start`
-2. **Reset database**: `npm run setup`
-3. **Test connections**: `npm run test-system`
+### Webhook Events
 
-### Common Issues
-- **LinkedIn blocks**: Reduce daily limits
-- **Messages not approved**: Check dashboard
-- **No responses**: Improve message templates
-- **WhatsApp not working**: Check Twilio setup
+The system processes these Unipile webhook events:
 
----
+- **`message_received`**: Prospect replies to your messages
+- **`new_relation`**: Connection requests accepted
+- **`message_sent`**: Confirmation of sent messages
+- **`account_status`**: Account health updates
 
-## 🎯 Success Tips
+### State Machine
 
-### Message Quality
-- Personalize every message
-- Reference their industry/role
-- Focus on pain points, not solutions
-- Keep connection requests under 200 chars
-
-### Timing
-- Send Tuesday-Thursday, 9AM-5PM
-- Avoid Monday mornings and Friday afternoons
-- Follow up every 3-7 days
-- Max 3 follow-ups per lead
-
-### Lead Quality
-- Target decision makers (CEO, Owner, Founder)
-- Focus on 5-50 employee companies
-- Non-tech industries respond better
-- Local businesses are more responsive
+Leads progress through these states:
+- `NEW_LEAD` → `CONNECTION_REQUEST_SENT` → `CONNECTION_ACCEPTED`
+- `FIRST_MESSAGE_DRAFTED` → `FIRST_MESSAGE_SENT` → `RESPONSE_RECEIVED`
+- `FOLLOW_UP_DRAFTED` → `FOLLOW_UP_SENT` → `HOT_LEAD`/`CLOSED_LOST`
 
 ---
 
-## 🚀 Ready to Start?
+## 🤝 Contributing
 
-1. **Get your API keys** (15 minutes)
-2. **Run the setup** (2 minutes)
-3. **Import your first 50 leads** (5 minutes)
-4. **Approve your first messages** (10 minutes)
-5. **Watch the responses come in** (24-48 hours)
-
-**Total setup time: ~30 minutes**
-**First responses: Within 2 days**
-**First meetings booked: Within 1 week**
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ---
 
-*Built with ❤️ for small business growth. This system has generated thousands of qualified leads for businesses just like yours.*
-#   l i n k e d i n - a u t o m a t i o n  
- 
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🆘 Support
+
+- **Documentation**: Check this README and code comments
+- **Issues**: Open a GitHub issue for bugs or feature requests
+- **Discussions**: Use GitHub Discussions for questions
+
+---
+
+## ⚠️ Disclaimer
+
+This tool is for educational and legitimate business purposes only. Users are responsible for complying with LinkedIn's Terms of Service and applicable laws. The authors are not responsible for any misuse of this software.
+
+---
+
+**Built with ❤️ for legitimate business growth and networking.**
